@@ -1,0 +1,7 @@
+# Ignore Windows system files
+desktop.ini
+Thumbs.db
+
+# Ignore temporary files
+*.log
+*.tmp

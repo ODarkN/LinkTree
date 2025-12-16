@@ -1,0 +1,100 @@
+/* Reset box model and remove default margin/padding */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif; /* Set default font */
+}
+
+/* Body styles */
+body {
+  min-height: 100vh; /* Full viewport height */
+  background: linear-gradient(180deg, #0a0a0a 0%, #1c1c1c 100%); /* Gradient background */
+  display: flex; /* Flexbox for centering container */
+  justify-content: center; /* Horizontal center */
+  color: #fff; /* Default text color */
+}
+
+/* Main content container */
+.container {
+  width: 100%; /* Full width on small screens */
+  max-width: 420px; /* Max width for large screens */
+  padding: 32px 20px; /* Padding inside container */
+  text-align: center; /* Center text */
+}
+
+/* Avatar / profile image */
+.avatar {
+  width: 200px;                /* Set the width of the logo */
+  height: 200px;               /* Set the height of the logo */
+  border-radius: 12px;         /* Slightly rounded corners */
+  object-fit: cover;           /* Ensure the image covers the box */
+  border: 4px solid #FF8088;   /* Pink border around the logo */
+  box-shadow: 0 0 10px #FF8088; /* Initial subtle glow around the border */
+  animation: pulse-border 2s infinite alternate; /* Apply pulsing animation */
+
+  margin-top: 35px;   /* space above the logo */
+  margin-bottom: 16px; /* space below the logo before username */
+}
+
+/* Keyframes for pulsing border and glow effect */
+@keyframes pulse-border {
+  0% {
+    border-color: #FF8088;                 /* Start with base pink */
+    box-shadow: 0 0 10px rgba(255,128,136,0.5); /* Subtle shadow */
+  }
+  50% {
+    border-color: #FF5F70;                 /* Slightly brighter / stronger color */
+    box-shadow: 0 0 20px rgba(255,128,136,0.8); /* Glow intensifies */
+  }
+  100% {
+    border-color: #FF8088;                 /* Return to base pink */
+    box-shadow: 0 0 10px rgba(255,128,136,0.5); /* Subtle shadow again */
+  }
+}
+
+/* Username / Name */
+h1 {
+  font-size: 20px; /* Font size */
+  font-weight: 600; /* Medium-bold */
+}
+
+/* Short description / bio */
+.bio {
+  font-size: 14px;
+  color: #cfcfcf; /* Slightly grey text */
+  margin: 8px 0 32px; /* Top & bottom spacing */
+}
+
+/* Links container */
+.links {
+  display: flex; /* Flex container */
+  flex-direction: column; /* Stack links vertically */
+  gap: 32px; /* Space between links */
+}
+
+/* Individual link button */
+.link {
+  display: block; /* Full width block element */
+  padding: 14px 16px; /* Space inside button */
+  border-radius: 14px; /* Rounded corners */
+  background: rgba(255,255,255,0.08); /* Semi-transparent background */
+  color: #fff; /* Text color */
+  text-decoration: none; /* Remove underline */
+  font-weight: 500; /* Medium font */
+  transition: transform .15s ease, background .15s ease; /* Smooth hover effects */
+  backdrop-filter: blur(6px); /* Frosted glass effect */
+}
+
+/* Hover effect on links */
+.link:hover {
+  transform: scale(1.02); /* Slight zoom on hover */
+  background: rgba(255,255,255,0.14); /* Darker background on hover */
+}
+
+/* Footer text */
+footer {
+  margin-top: 32px; /* Space above footer */
+  font-size: 12px; /* Small text */
+  color: #888; /* Grey color */
+}
