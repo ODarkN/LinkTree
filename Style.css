@@ -6,13 +6,22 @@
   font-family: 'Inter', sans-serif; /* Set default font */
 }
 
-/* Body styles */
 body {
-  min-height: 100vh; /* Full viewport height */
-  background: linear-gradient(180deg, #0a0a0a 0%, #1c1c1c 100%); /* Gradient background */
-  display: flex; /* Flexbox for centering container */
-  justify-content: center; /* Horizontal center */
-  color: #fff; /* Default text color */
+  min-height: 100vh; /* Ensure body takes at least full viewport height */
+  display: flex; /* Use flex layout to center content */
+  justify-content: center; /* Center content horizontally */
+  color: #000000; /* Default text color */
+  font-family: 'Inter', sans-serif; /* Set default font */
+  position: relative; /* Allow absolutely positioned children */
+  overflow: hidden; /* Hide overflowing bubbles */
+  background-color: #0e1011; /* Fallback background */
+}
+
+#blobcontainer {
+  position: fixed;    /* Stay behind content */
+  inset: 0;           /* Full viewport */
+  z-index: -1;        /* Behind everything */
+  overflow: hidden;   /* Hide blobs going outside */
 }
 
 /* Main content container */
@@ -55,41 +64,95 @@ body {
 
 /* Username / Name */
 h1 {
-  font-size: 20px; /* Font size */
-  font-weight: 600; /* Medium-bold */
+  font-size: 32px; /* Font size */
+  font-weight: 900; /* Medium-bold + */
+    color: #ffffff; /* Black color */
 }
 
 /* Short description / bio */
 .bio {
-  font-size: 14px;
-  color: #cfcfcf; /* Slightly grey text */
-  margin: 8px 0 32px; /* Top & bottom spacing */
+  font-size: 14px; /* Font size */
+  font-weight: 800; /* Bold text */
+  color: #ffffff; /* Black color */
+  margin: 8px 0 32px; /* Top and bottom spacing */
 }
 
-/* Links container */
+/* Container for all social buttons */
 .links {
   display: flex; /* Flex container */
-  flex-direction: column; /* Stack links vertically */
-  gap: 32px; /* Space between links */
+  flex-direction: column; /* Stack buttons vertically */
+  gap: 32px; /* Space between buttons */
+  width: 300px; /* Container width */
+  margin: 50px auto; /* Center container horizontally */
 }
 
-/* Individual link button */
-.link {
-  display: block; /* Full width block element */
-  padding: 14px 16px; /* Space inside button */
-  border-radius: 14px; /* Rounded corners */
-  background: rgba(255,255,255,0.08); /* Semi-transparent background */
-  color: #fff; /* Text color */
+/* Single social button */
+.slink {
+  display: flex; /* Flex layout for icon + text */
+  align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
+  gap: 12px; /* Space between icon and text */
+
+  width: 100%; /* Full width of links container */
+  padding: 16px; /* Inner spacing */
+
+  border-radius: 16px; /* Smooth rounded corners */
+
+  /* Glassmorphism background using avatar border color */
+  background: rgba(255, 128, 136, 0.15);  /* Soft pink glass */
+  border: 2px solid rgba(255, 128, 136, 0.6); /* Avatar color border */
+
+  color: #ffffff; /* Text color */
+  font-weight: 600; /* Semi-bold text */
   text-decoration: none; /* Remove underline */
-  font-weight: 500; /* Medium font */
-  transition: transform .15s ease, background .15s ease; /* Smooth hover effects */
-  backdrop-filter: blur(6px); /* Frosted glass effect */
+
+  backdrop-filter: blur(10px); /* Frosted glass effect */
+
+  /* Initial subtle glow (off by default) */
+  box-shadow:
+    0 0 0 rgba(255, 128, 136, 0),
+    inset 0 0 0 rgba(255, 128, 136, 0);
+
+  /* Smooth hover transitions */
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
-/* Hover effect on links */
-.link:hover {
-  transform: scale(1.02); /* Slight zoom on hover */
-  background: rgba(255,255,255,0.14); /* Darker background on hover */
+/* Hover state – glow like avatar border */
+.slink:hover {
+  transform: scale(1.04); /* Slight zoom on hover */
+
+  background: rgba(255, 128, 136, 0.25); /* Stronger glass tint */
+
+  /* Outer + inner glow */
+  box-shadow:
+    0 0 18px rgba(255, 128, 136, 0.8),
+    inset 0 0 12px rgba(255, 128, 136, 0.4);
+}
+
+/* Social platform icon styling */
+.sicon {
+  width: 20px;
+  height: 20px;
+
+  filter:
+    brightness(0) invert(1)
+    drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+}
+
+/* Social button hover effect with gradient glow */
+.slink:hover {
+  transform: scale(1.04); /* Slight zoom on hover */
+
+  /* Background matches the glow color, uniform on hover */
+  background: rgba(255, 128, 136, 0.2);
+
+  /* Glow */
+  box-shadow:
+    0 0 18px rgba(255, 128, 136, 0.8),
+    inset 0 0 12px rgba(255, 128, 136, 0.4);
 }
 
 /* Footer text */

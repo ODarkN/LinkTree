@@ -14,8 +14,11 @@
 
   <!-- Link to external CSS file -->
   <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+  </head>
+  <body>
+
+  <!-- Blob container behind content -->
+  <div id="blobcontainer"></div>
 
   <main class="container"> <!-- Main content container centered -->
 
@@ -23,21 +26,37 @@
     <img class="avatar" src="https://art.pixilart.com/sr5za25b0aed56aws3.png" alt="Logo"> <!-- User profile image -->
 
     <!-- username -->
-    <h1>@ODarkN</h1> <!-- Replace with your own username -->
+    <h1>ODarkN</h1> <!-- Replace with your own username -->
 
     <!-- Bio -->
-    <p class="bio">C#, Unity, Frontend Dev | Pixel, 3D artist | Investor 🌈 </p> <!-- Short description or bio -->
+    <p class="bio">C#, Unity, Frontend Dev | Pixel, 3D artist | Investor 🌈</p> <!-- Short description or bio -->
 
     <!-- Links Section -->
-    <div class="links"> <!-- Container for all links -->
-      <a href="#" class="link">Twitter</a> <!-- Each link styled as a button -->
-      <a href="#" class="link">Github</a>
-      <a href="#" class="link">Pixilart</a>
-    </div>
+<div class="links"> <!-- Container for all social buttons -->
+  <a href="https://x.com/OrewaDarkNeko" class="slink" target="_blank"> <!-- Single social button for X -->
+  <img src="icons/x.svg" class="sicon"> <!-- Social platform icon -->
+  <span class="sname"></span> <!-- Social platform name by java script -->
+  </a>
+
+  <a href="https://github.com/ODarkN" class="slink" target="_blank"> <!-- Single social button for GitHub -->
+  <img src="icons/github.svg" class="sicon"> <!-- Social platform icon -->
+    <span class="sname"></span> <!-- Social platform name by java script -->
+  </a>
+</div>
+
+<script>
+  document.querySelectorAll('.slink').forEach(link => {
+    const url = link.href; // Get the href of the link
+    let nick = url.split('/').pop(); // Take the last part of the URL
+    link.querySelector('.sname').textContent = nick; // Insert nick into span
+  });
+</script>
 
     <!-- Optional Footer -->
     <footer>© 2026</footer> <!-- Footer text -->
   </main>
+
+  <script src="blobs.js"></script>
 
 </body>
 </html>
