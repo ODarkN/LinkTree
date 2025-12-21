@@ -1,3 +1,12 @@
+<!--
+Author: ODarkN
+
+This HTML file structures a simple LinkTree style page with links to social media 
+and creative work. It includes main container, avatar, username, bio, social links, 
+dynamic JavaScript to populate usernames, footer, and references external CSS for styling 
+and JS for background blob animations.
+-->
+
 <!DOCTYPE html>
 <html lang="en"> <!-- Set the page language -->
 <head>
@@ -6,57 +15,61 @@
   <title>Link in bio</title> <!-- Page title shown in browser tab -->
 
   <!-- Google Fonts preconnect for faster loading -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> <!-- Cross-origin for fonts -->
 
   <!-- Import Inter font family from Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /> <!-- Load Inter font -->
 
   <!-- Link to external CSS file -->
-  <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+  <link rel="stylesheet" href="style.css" /> <!-- Link to main stylesheet -->
+</head>
+<body>
 
   <!-- Blob container behind content -->
-  <div id="blobcontainer"></div>
+  <div id="blobcontainer"></div> <!-- Empty container for background blobs -->
 
   <main class="container"> <!-- Main content container centered -->
 
     <!-- Avatar -->
-    <img class="avatar" src="https://art.pixilart.com/sr5za25b0aed56aws3.png" alt="Logo"> <!-- User profile image -->
+    <img class="avatar" src="https://art.pixilart.com/sr5za25b0aed56aws3.png" alt="Logo" /> <!-- User profile image -->
 
-    <!-- username -->
-    <h1>ODarkN</h1> <!-- Replace with your own username -->
+    <!-- Username -->
+    <h1>ODarkN</h1> <!-- Display the username -->
 
     <!-- Bio -->
     <p class="bio">C#, Unity, Frontend Dev | Pixel, 3D artist | Investor 🌈</p> <!-- Short description or bio -->
 
     <!-- Links Section -->
-<div class="links"> <!-- Container for all social buttons -->
-  <a href="https://x.com/OrewaDarkNeko" class="slink" target="_blank"> <!-- Single social button for X -->
-  <img src="icons/x.svg" class="sicon"> <!-- Social platform icon -->
-  <span class="sname"></span> <!-- Social platform name by java script -->
-  </a>
+    <div class="links"> <!-- Container for all social buttons -->
 
-  <a href="https://github.com/ODarkN" class="slink" target="_blank"> <!-- Single social button for GitHub -->
-  <img src="icons/github.svg" class="sicon"> <!-- Social platform icon -->
-    <span class="sname"></span> <!-- Social platform name by java script -->
-  </a>
-</div>
+      <a href="https://x.com/OrewaDarkNeko" class="slink" target="_blank"> <!-- Single social button for X -->
+        <img src="Icons/x.svg" class="sicon" /> <!-- Icon for X platform -->
+        <span class="sname"></span> <!-- Placeholder for dynamic username -->
+      </a>
 
-<script>
-  document.querySelectorAll('.slink').forEach(link => {
-    const url = link.href; // Get the href of the link
-    let nick = url.split('/').pop(); // Take the last part of the URL
-    link.querySelector('.sname').textContent = nick; // Insert nick into span
-  });
-</script>
+      <a href="https://github.com/ODarkN" class="slink" target="_blank"> <!-- Single social button for GitHub -->
+        <img src="Icons/github.svg" class="sicon" /> <!-- Icon for GitHub platform -->
+        <span class="sname"></span> <!-- Placeholder for dynamic username -->
+      </a>
+
+    </div> <!-- End of links container -->
+
+    <script>
+      // Loop over each social link
+      document.querySelectorAll('.slink').forEach(link => {
+        const url = link.href; // Get the href of the link
+        let nick = url.split('/').pop(); // Extract the last part of the URL
+        link.querySelector('.sname').textContent = nick; // Insert username into span
+      });
+    </script>
 
     <!-- Optional Footer -->
     <footer>© 2026</footer> <!-- Footer text -->
-  </main>
+  </main> <!-- End of main container -->
 
-  <script src="blobs.js"></script>
+  <!-- Script for background blobs -->
+  <script src="blobs.js"></script> <!-- Load blob animation script -->
 
 </body>
 </html>
