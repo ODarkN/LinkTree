@@ -1,0 +1,143 @@
+/*
+Author: ODarkN
+
+This CSS file styles a simple LinkTree style page with links to social media 
+and creative work. It includes layout, avatar, buttons, hover effects, glow 
+animations, responsive design, and glassmorphism effects.
+*/
+
+:root {
+  --primary-color: #FF8088; /* Set base pink color for avatar and links */
+  --primary-color-hover: #FF5F70; /* Set hover pink color for animations and buttons */
+  --primary-color-glow: rgba(255,128,136,0.8); /* Set glow color for pulsing effect */
+  --text-color: #ffffff; /* Set default text color */
+  --bg-color: #0e1011; /* Set default background color */
+  --font-family: 'Inter', sans-serif; /* Set default font family */
+}
+
+* {
+  box-sizing: border-box; /* Use border-box for all elements */
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
+  font-family: var(--font-family); /* Apply default font to all elements */
+}
+
+body {
+  min-height: 100vh; /* Ensure body covers full viewport height */
+  display: flex; /* Enable flex layout for body */
+  justify-content: center; /* Center content horizontally */
+  color: var(--text-color); /* Set default text color */
+  font-family: var(--font-family); /* Apply default font to body */
+  position: relative; /* Allow absolutely positioned children */
+  overflow: hidden; /* Hide overflow for decorative elements */
+  background-color: var(--bg-color); /* Set page background color */
+}
+
+#blobcontainer {
+  position: fixed; /* Fix position so blobs stay behind content */
+  inset: 0; /* Fill entire viewport */
+  z-index: -1; /* Place behind all other content */
+  overflow: hidden; /* Prevent blobs from overflowing */
+}
+
+.container {
+  width: 100%; /* Make container full width on small screens */
+  max-width: 420px; /* Limit maximum width for larger screens */
+  padding: 32px 20px; /* Add inner spacing */
+  text-align: center; /* Center text content */
+}
+
+.avatar {
+  width: 200px; /* Set avatar width */
+  height: 200px; /* Set avatar height */
+  border-radius: 12px; /* Round corners slightly */
+  object-fit: cover; /* Make image cover the box */
+  border: 4px solid var(--primary-color); /* Add pink border around avatar */
+  box-shadow: 0 0 10px var(--primary-color-glow); /* Add initial glow around avatar */
+  animation: pulse-border 2s infinite alternate; /* Apply pulsing border animation */
+  margin-top: 35px; /* Space above avatar */
+  margin-bottom: 16px; /* Space below avatar */
+}
+
+@keyframes pulse-border {
+  0% {
+    border-color: var(--primary-color); /* Start with base pink */
+    box-shadow: 0 0 10px rgba(255,128,136,0.5); /* Subtle shadow */
+  }
+  50% {
+    border-color: var(--primary-color-hover); /* Brighten border */
+    box-shadow: 0 0 20px var(--primary-color-glow); /* Intensify glow */
+  }
+  100% {
+    border-color: var(--primary-color); /* Return to base color */
+    box-shadow: 0 0 10px rgba(255,128,136,0.5); /* Return to subtle shadow */
+  }
+}
+
+h1 {
+  font-size: 32px; /* Set font size for username */
+  font-weight: 900; /* Make username extra bold */
+  color: var(--text-color); /* Set username text color */
+}
+
+.bio {
+  font-size: 14px; /* Set font size for bio */
+  font-weight: 800; /* Make bio text bold */
+  color: var(--text-color); /* Set bio text color */
+  margin: 8px 0 32px; /* Add spacing above and below bio */
+}
+
+.links {
+  display: flex; /* Use flex layout for links */
+  flex-direction: column; /* Stack links vertically */
+  gap: 32px; /* Add space between links */
+  width: 300px; /* Set links container width */
+  margin: 50px auto; /* Center links horizontally with vertical margin */
+}
+
+.slink {
+  display: flex; /* Flex layout for icon and text */
+  align-items: center; /* Center items vertically */
+  justify-content: center; /* Center items horizontally */
+  gap: 12px; /* Space between icon and text */
+  width: 100%; /* Make link full width */
+  padding: 16px; /* Inner spacing for link */
+  border-radius: 16px; /* Round corners of link */
+  background: rgba(255, 128, 136, 0.15); /* Set soft pink background */
+  border: 2px solid rgba(255, 128, 136, 0.6); /* Add border matching avatar */
+  color: var(--text-color); /* Set text color */
+  font-weight: 600; /* Semi-bold text */
+  text-decoration: none; /* Remove underline */
+  backdrop-filter: blur(10px); /* Apply frosted glass effect */
+  box-shadow: 0 0 0 rgba(255,128,136,0), inset 0 0 0 rgba(255,128,136,0); /* Initial shadow off */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; /* Smooth hover transition */
+}
+
+.slink:hover {
+  transform: scale(1.04); /* Slightly enlarge link on hover */
+  background: rgba(255, 128, 136, 0.25); /* Increase background tint on hover */
+  box-shadow: 0 0 18px var(--primary-color-glow), inset 0 0 12px rgba(255,128,136,0.4); /* Add outer and inner glow */
+}
+
+.sicon {
+  width: 20px; /* Set icon width */
+  height: 20px; /* Set icon height */
+  filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.8)); /* Make icon bright with glow */
+}
+
+footer {
+  margin-top: 32px; /* Space above footer */
+  font-size: 12px; /* Set small font size */
+  color: #888; /* Set grey color for footer text */
+}
+
+@media (max-width: 480px) {
+  .avatar {
+    width: 150px; /* Reduce avatar width for mobile */
+    height: 150px; /* Reduce avatar height for mobile */
+  }
+  .links {
+    width: 90%; /* Make links container responsive */
+    gap: 24px; /* Reduce gap between links on mobile */
+  }
+}
