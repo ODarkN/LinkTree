@@ -1,75 +1,147 @@
 <!--
 Author: ODarkN
 
-This HTML file structures a simple LinkTree style page with links to social media 
-and creative work. It includes main container, avatar, username, bio, social links, 
-dynamic JavaScript to populate usernames, footer, and references external CSS for styling 
-and JS for background blob animations.
+This document defines a Link in bio style landing page.
+It contains two main sections social links and a small arcade game.
+Layout styling is handled by an external CSS file.
+Background animation is handled by blobs.js.
+Some interface elements are dynamically populated using inline JavaScript.
 -->
 
+<!-- Declares HTML5 document type -->
 <!DOCTYPE html>
-<html lang="en"> <!-- Set the page language -->
+
+<!-- Root element of the document, language set to English for accessibility and SEO -->
+<html lang="en">
+
+<!-- Metadata container, not visible to the user -->
 <head>
-  <meta charset="UTF-8" /> <!-- Character encoding -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> <!-- Responsive for mobile -->
-  <title>Link in bio</title> <!-- Page title shown in browser tab -->
+  <!-- Defines UTF 8 encoding to properly render international characters -->
+  <meta charset="UTF-8" />
+  
+  <!-- Ensures responsive scaling on different screen sizes -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <!-- Title displayed in the browser tab -->
+  <title>ODarkN Linktree</title>
 
-  <!-- Google Fonts preconnect for faster loading -->
+  <!-- Establish early connection to Google Fonts servers to reduce loading delay -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> <!-- Cross-origin for fonts -->
+  <!-- Preconnect to font stylesheet domain -->
 
-  <!-- Import Inter font family from Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /> <!-- Load Inter font -->
+  <!-- Preconnect to font asset domain with cross origin support -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <!-- Link to external CSS file -->
-  <link rel="stylesheet" href="style.css" /> <!-- Link to main stylesheet -->
+
+  <!-- Imports Inter font family with selected font weights -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Links external stylesheet responsible for layout and visual styling -->
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <!-- Visible page content starts here -->
 
-  <!-- Blob container behind content -->
-  <div id="blobcontainer"></div> <!-- Empty container for background blobs -->
+  <!-- Background layer container used by blobs.js to render animated shapes -->
+  <div id="blobcontainer"></div>
 
-  <main class="container"> <!-- Main content container centered -->
+<div id="master-layout">
+  <div class="physics-zone side-zone" id="left-anchor"></div>
+  <!-- Main layout wrapper that centers and constrains page content -->
+  <main class="container">
 
-    <!-- Avatar -->
-    <img class="avatar" src="https://art.pixilart.com/sr5za25b0aed56aws3.png" alt="Logo" /> <!-- User profile image -->
+    <!-- Profile avatar or brand logo displayed at the top -->
+    <img class="avatar"
+         src="https://art.pixilart.com/sr5z46a9678bb2aws3.png"
+         alt="Logo" />
+    <!-- The alt attribute improves accessibility for screen readers -->
 
-    <!-- Username -->
-    <h1>ODarkN</h1> <!-- Display the username -->
+    <!-- Primary heading showing username or brand name -->
+    <h1>ODarkN</h1>
 
-    <!-- Bio -->
-    <p class="bio">C#, Unity, Frontend Dev | Pixel, 3D artist | Investor 🌈</p> <!-- Short description or bio -->
+    <!-- Short descriptive bio placed below the heading -->
+    <p class="bio">
+      Blending AI artistry with crypto chaos & anime aesthetics.
+    </p>
 
-    <!-- Links Section -->
-    <div class="links"> <!-- Container for all social buttons -->
+    <!-- Tab navigation that switches between socials and arcade -->
+    <nav class="tab-nav">
+      <!-- Button activates socials tab via showTab function -->
+      <button onclick="showTab('socials', this)" class="tab-btn active">
+        Socials
+      </button>
 
-      <a href="https://x.com/OrewaDarkNeko" class="slink" target="_blank"> <!-- Single social button for X -->
-        <img src="Icons/x.svg" class="sicon" /> <!-- Icon for X platform -->
-        <span class="sname"></span> <!-- Placeholder for dynamic username -->
-      </a>
+      <!-- Button activates arcade tab via showTab function -->
+      <button onclick="showTab('arcade', this)" class="tab-btn">
+        Arcade
+      </button>
+    </nav>
 
-      <a href="https://github.com/ODarkN" class="slink" target="_blank"> <!-- Single social button for GitHub -->
-        <img src="Icons/github.svg" class="sicon" /> <!-- Icon for GitHub platform -->
-        <span class="sname"></span> <!-- Placeholder for dynamic username -->
-      </a>
+    <!-- Socials tab container visible by default -->
+    <div id="socials-tab"
+         class="tab-content"
+         style="display: flex;">
+      <!-- Inline style sets initial visibility state -->
 
-    </div> <!-- End of links container -->
+      <!-- Wrapper grouping all social links -->
+      <div class="links">
 
-    <script>
-      // Loop over each social link
-      document.querySelectorAll('.slink').forEach(link => {
-        const url = link.href; // Get the href of the link
-        let nick = url.split('/').pop(); // Extract the last part of the URL
-        link.querySelector('.sname').textContent = nick; // Insert username into span
-      });
-    </script>
+        <!-- Social media link element -->
+        <a href="https://x.com/OrewaDarkNeko"
+           class="slink"
+           target="_blank">
+          <!-- target blank opens link in a new browser tab -->
 
-    <!-- Optional Footer -->
-    <footer>© 2026</footer> <!-- Footer text -->
-  </main> <!-- End of main container -->
+          <!-- Platform icon -->
+          <img src="Icons/x.svg" class="sicon" />
+          
+          <!-- Username placeholder populated dynamically -->
+          <span class="sname"></span>
+        </a>
 
-  <!-- Script for background blobs -->
-  <script src="blobs.js"></script> <!-- Load blob animation script -->
+        <!-- GitHub profile link -->
+        <a href="https://github.com/ODarkN"
+           class="slink"
+           target="_blank">
 
+          <!-- Platform icon -->
+          <img src="Icons/github.svg" class="sicon" />
+          
+          <!-- Username placeholder populated dynamically -->
+          <span class="sname"></span>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Arcade tab container hidden by default until user switches tabs -->
+    <div id="arcade-tab" class="tab-content" style="display: none;">
+      <div class="links">
+        <a id="arcade-launcher" href="game.html" target="_blank" class="slink" style="background: rgba(166, 216, 238, 0.15); border-color: rgba(166, 216, 238, 0.6); cursor: pointer; width: 100%; text-decoration: none;">
+          <svg class="sicon" viewBox="0 0 5 5" fill="white" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 0.4rem rgba(166, 216, 238, 0.8));">
+            <path d="M2 0h1v1h1v1h1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h1v-1h1v-1z" />
+          </svg>
+          <span style="font-weight: 600;">Pixel Hunter</span>
+        </a>
+
+        <div id="arcade-soon" class="slink" style="opacity: 0.5; cursor: not-allowed; background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1);">
+          <span style="font-weight: 600; color: rgba(255, 255, 255, 0.6);">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer section with copyright range -->
+    <footer>
+      ©2025 - 2026
+    </footer>
+
+  </main>
+  <div class="physics-zone side-zone" id="right-anchor"></div>
+</div>
+
+  <!-- External script that generates animated background blobs -->
+  <script src="blobs.js"></script>
+  <script src="hub.js"></script>
 </body>
 </html>

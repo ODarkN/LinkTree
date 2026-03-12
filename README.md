@@ -1,21 +1,25 @@
-## LinkTree odarkn
+## ODarkN Link Hub
 
-*A simple LinkTree style page with links to my creative work and social media.*  
-*Built with HTML, CSS, and JS, currently serving as a basic link hub.*  
+*A dynamic LinkTree style landing page bridging AI artistry, crypto chaos, and anime aesthetics.* *Built with HTML, CSS, and vanilla JS, featuring a custom performance optimized 2D particle background.*
 
 ### Repository Structure
 
-```csharp
+```text
 LinkTree/
 ├── index.html
 ├── style.css
-├── blobs.js
+├── blobs.js       # Custom 2D physics & particle engine
+├── hub.js         # UI and tab interactions
+├── DebugTool.js   # Diagnostic HUD overlay
+├── Icons/         # SVG asset directory
+├── .gitignore
 └── README.md
 ```
 
-### Features
+### Core Features
 
-*- Links to my social media profiles*  
-*- Links to my creative work like portfolio, projects, games, graphics. Soon.*  
-*- Simple, responsive design*  
-*- Easy to expand with additional links*  
+*- Dynamic Physics Background, Custom 2D particle system (blobs.js) with smooth continuous movement and state management.*  
+*- Smart Spatial Balancing, Autonomous background entities that calculate screen density and silently relocate to maintain visual equilibrium.*  
+*- Resolution Independent, Zoom normalized velocity math and CSS clamp() bounds ensure consistent animation speed and UI scaling across all screen sizes.*  
+*- Performance Optimized, Driven by requestAnimationFrame, with logic that suspends calculations for invisible elements to save resources.*  
+*- Expandable Architecture, Modular design prepared for upcoming creative portfolios, web games (Arcade tab), and 3D web integrations.*  

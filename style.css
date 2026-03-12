@@ -1,143 +1,369 @@
 /*
 Author: ODarkN
 
-This CSS file styles a simple LinkTree style page with links to social media 
-and creative work. It includes layout, avatar, buttons, hover effects, glow 
-animations, responsive design, and glassmorphism effects.
+This stylesheet defines layout, visual identity, animations and interactive 
+states for a LinkTree style profile page with an embedded arcade section.
+All rules are consistently documented for clarity and maintainability.
 */
 
+html {
+  /* standard base size that respects browser defaults and accessibility */
+  font-size: 14.5px; 
+}
+
 :root {
-  --primary-color: #FF8088; /* Set base pink color for avatar and links */
-  --primary-color-hover: #FF5F70; /* Set hover pink color for animations and buttons */
-  --primary-color-glow: rgba(255,128,136,0.8); /* Set glow color for pulsing effect */
-  --text-color: #ffffff; /* Set default text color */
-  --bg-color: #0e1011; /* Set default background color */
-  --font-family: 'Inter', sans-serif; /* Set default font family */
+  --primary-color: #FF8088; /* Main accent color used for borders and highlights */
+  --primary-color-hover: #FF5F70; /* Brighter accent tone used during hover states */
+  --primary-color-glow: rgba(255,128,136,0.8); /* Neon glow color derived from primary accent */
+  --text-color: #ffffff; /* Default foreground text color */
+  --bg-color: #0e1011; /* Main background color */
+  --font-family: 'Inter', sans-serif; /* Global font family */
 }
 
+/* Global reset applied to all elements */
 * {
-  box-sizing: border-box; /* Use border-box for all elements */
-  margin: 0; /* Remove default margin */
-  padding: 0; /* Remove default padding */
-  font-family: var(--font-family); /* Apply default font to all elements */
+  box-sizing: border-box; /* Includes padding and border inside total size */
+  margin: 0; /* Removes default browser margin */
+  padding: 0; /* Removes default browser padding */
+  font-family: var(--font-family); /* Applies consistent typography */
 }
 
+/* Main body layout configuration */
 body {
-  min-height: 100vh; /* Ensure body covers full viewport height */
-  display: flex; /* Enable flex layout for body */
-  justify-content: center; /* Center content horizontally */
-  color: var(--text-color); /* Set default text color */
-  font-family: var(--font-family); /* Apply default font to body */
-  position: relative; /* Allow absolutely positioned children */
-  overflow: hidden; /* Hide overflow for decorative elements */
-  background-color: var(--bg-color); /* Set page background color */
+  margin: 0; /* resetting browser default spacing to prevent unwanted offsets */
+  padding: 0; /* eliminating internal padding to avoid sub-pixel scroll triggers */
+  background-color: var(--bg-color); /* setting the deep charcoal base */
+  color: var(--text-color); /* applying the primary white typography */
+  font-family: var(--font-family); /* ensuring consistent inter font usage */
+  overflow: hidden; /* disabling the scroll engine to maintain a static app aesthetic */
+  height: 100vh; /* locking height to viewport to prevent bounce */
+  width: 100vw; /* locking width to viewport */
 }
 
+/* Main layout grid providing a stable coordinate system for the physics engine */
+#master-layout {
+  display: grid; /* establishing a rigid grid system for the physics zones */
+  /* center column matches your .container width exactly (540px) */
+  grid-template-columns: 1fr 540px 1fr; 
+  width: 100vw; /* strictly filling the viewport width */
+  height: 100vh; /* strictly filling the viewport height */
+  position: fixed; /* freezing the layout to kill mobile bounce scrolling */
+  top: 0; left: 0;
+  z-index: 5; /* placing it between the blobs and the interactive elements */
+  pointer-events: none; /* allowing mouse events to pass through to the background if needed */
+}
+
+/* Invisible anchors used by the balancing engine to calculate spawn bounds */
+.physics-zone {
+  height: 100%; /* spanning the full height of the master grid */
+  pointer-events: none; /* ensuring these zones don't block clicks */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* disabling the scrollbar display for Chrome and Safari to keep the UI seamless */
+}
+
+/* Background animated blob container */
 #blobcontainer {
-  position: fixed; /* Fix position so blobs stay behind content */
-  inset: 0; /* Fill entire viewport */
-  z-index: -1; /* Place behind all other content */
-  overflow: hidden; /* Prevent blobs from overflowing */
+  position: fixed; /* Keeps background fixed */
+  inset: 0; /* Expands to full viewport */
+  z-index: 1; /* Places behind main UI */
+  overflow: hidden; /* Prevents overflow artifacts */
+  pointer-events: none; /* Allows interaction with foreground elements */
+  user-select: none; /* Prevents accidental selection */
+  -webkit-user-select: none; /* Safari support */
 }
 
+/* Main content wrapper */
 .container {
-  width: 100%; /* Make container full width on small screens */
-  max-width: 420px; /* Limit maximum width for larger screens */
-  padding: 32px 20px; /* Add inner spacing */
-  text-align: center; /* Center text content */
+  pointer-events: auto; /* re enabling mouse interactions for the interface elements */
+  grid-column: 2; /* forcing the container strictly into the central 600px zone */
+  position: relative; /* establishing stacking context for background layers */
+  z-index: 10; /* keeping interface elements above animated blobs */
+  
+  /* UI size that scales fluidly but respects strict minimum and maximum boundaries */
+  width: clamp(320px, 35vw, 450px);
+  /* preventing overflow on narrow viewports before the engine initializes */
+  max-width: 100%; 
+  
+  height: auto; /* forcing the container to occupy most of the viewport height for vertical fill */  
+  padding: 2rem 2rem 4rem 2rem; /* applying balanced padding to provide breathing room for icons and text */
+  display: flex; /* enabling flexbox to manage the vertical content stack */
+  flex-direction: column; /* stacking children from top to bottom */
+  gap: 1.5rem; /* establishing a consistent scalable vertical rhythm */
+  align-items: center; /* ensuring horizontal symmetry for all children */
+  
+  /* centering and transformation logic */
+  margin: 0 auto;   /* keeping it perfectly centered in the viewport */
+  transform-origin: center center; /* ensuring the transform scales from the center to maintain perfect viewport alignment */
+  justify-content: center; /* distributing children with a gap to maintain layout density */
+  transition: transform 0.1s ease-out; /* adding a subtle transition for smoother visual feedback during resize */
+  will-change: transform; /* hardware acceleration for smooth scaling */
+
+  /* Debug only... Visualizing the Death Zone boundaries */
+  /* outline: 2px dashed #00ff00;  */
+  /* background: rgba(0, 255, 0, 0.05); */
 }
 
+/* Avatar styling */
 .avatar {
-  width: 200px; /* Set avatar width */
-  height: 200px; /* Set avatar height */
-  border-radius: 12px; /* Round corners slightly */
-  object-fit: cover; /* Make image cover the box */
-  border: 4px solid var(--primary-color); /* Add pink border around avatar */
-  box-shadow: 0 0 10px var(--primary-color-glow); /* Add initial glow around avatar */
-  animation: pulse-border 2s infinite alternate; /* Apply pulsing border animation */
-  margin-top: 35px; /* Space above avatar */
-  margin-bottom: 16px; /* Space below avatar */
+  width: 100%; /* forces the image to respect container boundaries */
+  max-width: 12rem; /* retains your original preferred size */
+  aspect-ratio: 1 / 1; /* ensures it always remains a perfect square even when squished */
+  border-radius: 0.9rem; /* tying corner roundness to the master scale */
+  object-fit: cover; /* Ensures image fills container properly */
+  border: 0.25rem solid var(--primary-color); /* scalable border thickness */
+  box-shadow: 0 0 0.6rem var(--primary-color-glow); /* proportional glow spread */
+  animation: pulse-border 2s infinite alternate; /* Continuous pulse animation */
+  margin-top: 1rem; /* applying scalable vertical spacing for consistent layout density */
+  margin-bottom: 0.2rem; /* ensuring proportional gap between the logo and the username */
 }
 
+/* Avatar border pulse animation */
 @keyframes pulse-border {
   0% {
-    border-color: var(--primary-color); /* Start with base pink */
-    box-shadow: 0 0 10px rgba(255,128,136,0.5); /* Subtle shadow */
+    border-color: var(--primary-color); /* Base accent */
+    box-shadow: 0 0 10px rgba(255,128,136,0.5); /* Subtle glow */
   }
   50% {
-    border-color: var(--primary-color-hover); /* Brighten border */
-    box-shadow: 0 0 20px var(--primary-color-glow); /* Intensify glow */
+    border-color: var(--primary-color-hover); /* Brighter accent */
+    box-shadow: 0 0 20px var(--primary-color-glow); /* Strong glow */
   }
   100% {
-    border-color: var(--primary-color); /* Return to base color */
-    box-shadow: 0 0 10px rgba(255,128,136,0.5); /* Return to subtle shadow */
+    border-color: var(--primary-color); /* Return to base */
+    box-shadow: 0 0 10px rgba(255,128,136,0.5); /* Restore subtle glow */
   }
 }
 
+/* Username heading */
 h1 {
-  font-size: 32px; /* Set font size for username */
-  font-weight: 900; /* Make username extra bold */
-  color: var(--text-color); /* Set username text color */
+  font-size: 1.9rem; /* tying the heading size to the global scale factor for proportional growth */
+  font-weight: 900; /* Extra bold */
+  color: var(--text-color); /* White text */
 }
 
+/* styling for the biography section to ensure perfect symmetry */
 .bio {
-  font-size: 14px; /* Set font size for bio */
-  font-weight: 800; /* Make bio text bold */
-  color: var(--text-color); /* Set bio text color */
-  margin: 8px 0 32px; /* Add spacing above and below bio */
+  text-align: center; /* enforcing horizontal text alignment within the block */
+  width: 100%; /* ensuring the text occupies the full width of the parent for proper centering */
+  max-width: 520px;  /* adding a slight max width for better readability on wider viewports */
+  margin: -1.2rem 0 1rem 0; /* balancing vertical spacing within the content stack */
+  /* ensuring font properties remain consistent across scales */
+  line-height: 1.5;
+  font-size: 1rem;
+  font-weight: 700; /* Extra bold */
 }
 
+/* Social links container */
 .links {
-  display: flex; /* Use flex layout for links */
-  flex-direction: column; /* Stack links vertically */
-  gap: 32px; /* Add space between links */
-  width: 300px; /* Set links container width */
-  margin: 50px auto; /* Center links horizontally with vertical margin */
+  display: flex; /* enabling flexbox to allow scalable gaps between items */
+  flex-direction: column; /* stacking social links vertically */
+  gap: 2rem; /* maintaining proportional spacing between social cards */
+  width: 90%; /* ensuring the links container occupies full width */
+  margin: 0.1rem 0; /* applying scalable vertical rhythm */
+  padding: 1rem; /* using rem padding for consistent internal spacing */
 }
 
+/* Individual social link card */
 .slink {
-  display: flex; /* Flex layout for icon and text */
-  align-items: center; /* Center items vertically */
-  justify-content: center; /* Center items horizontally */
-  gap: 12px; /* Space between icon and text */
-  width: 100%; /* Make link full width */
-  padding: 16px; /* Inner spacing for link */
-  border-radius: 16px; /* Round corners of link */
-  background: rgba(255, 128, 136, 0.15); /* Set soft pink background */
-  border: 2px solid rgba(255, 128, 136, 0.6); /* Add border matching avatar */
-  color: var(--text-color); /* Set text color */
-  font-weight: 600; /* Semi-bold text */
-  text-decoration: none; /* Remove underline */
-  backdrop-filter: blur(10px); /* Apply frosted glass effect */
-  box-shadow: 0 0 0 rgba(255,128,136,0), inset 0 0 0 rgba(255,128,136,0); /* Initial shadow off */
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; /* Smooth hover transition */
+  font-size: 1.1rem; /* bumping the base font size for better legibility */
+  display: flex; /* Layout for icon and text */
+  align-items: center; /* Vertical alignment */
+  justify-content: center; /* Horizontal centering */
+  gap: 0.7rem; /* establishing a scalable gap between the icon and the label */
+  width: 100%; /* ensuring the link card occupies the full container width */
+  padding: 1.2rem 0.9rem; /* applying proportional internal padding for a balanced look */
+  border-radius: 1rem; /* tying corner roundness to the master scale for visual consistency */
+  background: rgba(255, 128, 136, 0.15); /* Semi transparent accent */
+  border: 0.125rem solid rgba(255, 128, 136, 0.6); /* scalable card border */
+  color: var(--text-color); /* White text */
+  font-weight: 600; /* Semi bold */
+  text-decoration: none; /* Removes underline */
+  backdrop-filter: blur(10px); /* Glass effect */
+  box-shadow: 0 0 0 rgba(255,128,136,0), inset 0 0 0 rgba(255,128,136,0); /* Initial state */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; /* Smooth transitions */
 }
 
+/* Hover interaction for social links */
 .slink:hover {
-  transform: scale(1.04); /* Slightly enlarge link on hover */
-  background: rgba(255, 128, 136, 0.25); /* Increase background tint on hover */
-  box-shadow: 0 0 18px var(--primary-color-glow), inset 0 0 12px rgba(255,128,136,0.4); /* Add outer and inner glow */
+  transform: scale(1.04); /* Slight enlargement */
+  background: rgba(255, 128, 136, 0.25); /* Brighter tint */
+  box-shadow: 0 0 10px var(--primary-color-glow), inset 0 0 6px rgba(255,128,136,0.2); /* Neon glow */
 }
 
+/* Social icon styling */
 .sicon {
-  width: 20px; /* Set icon width */
-  height: 20px; /* Set icon height */
-  filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.8)); /* Make icon bright with glow */
+  width: 1.3rem; /* setting scalable width to maintain icon proportions during zoom */
+  height: 1.3rem; /* setting scalable height to match the new global canvas scale */
+  filter: brightness(0) invert(1) drop-shadow(0 0 0.4rem rgba(255,255,255,0.8)); /* scaling the glow effect for consistent visual depth */
 }
 
+/* Footer styling */
 footer {
-  margin-top: 32px; /* Space above footer */
-  font-size: 12px; /* Set small font size */
-  color: #888; /* Set grey color for footer text */
+  width: 100%; /* spans the width for centering */
+  text-align: center; /* centers the text */
+  font-size: 1rem;
+  color: #888;
+  position: static; /* returns the footer to the normal document flow */
 }
 
-@media (max-width: 480px) {
-  .avatar {
-    width: 150px; /* Reduce avatar width for mobile */
-    height: 150px; /* Reduce avatar height for mobile */
+/* Tab navigation container */
+.tab-nav {
+  display: flex; /* establishes a flexbox layout for the navigation items */
+  justify-content: center; /* aligns buttons to the center of the horizontal axis */
+  width: 100%; /* ensures the nav container spans the full parent width */
+  gap: 2rem; /* defines the specific horizontal spacing between tab buttons */
+  margin-bottom: 0.5rem; /* applies vertical separation from the profile content above */
+}
+
+/* Base styling for tab buttons */
+.tab-btn {
+  font-size: 1.2rem; /* explicitly tying tab label size to the master scale */
+  flex: 1; /* Equal width */
+  padding: 1rem; /* using rem padding to ensure button size scales with the global factor */
+  border-radius: 1rem; /* maintaining consistent corner roundness across the whole UI */
+  background: rgba(255, 128, 136, 0.15); /* Pink glass */
+  border: 2px solid rgba(255, 128, 136, 0.6); /* Pink border */
+  color: var(--text-color); /* White text */
+  cursor: pointer; /* Pointer cursor */
+  font-weight: 600; /* Semi bold */
+  backdrop-filter: blur(10px); /* Glass effect */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; /* Smooth transitions */
+}
+
+/* Hover state for tabs */
+.tab-btn:hover {
+  transform: scale(1.04); /* Slight enlargement */
+  background: rgba(255, 128, 136, 0.25); /* Brighter pink */
+  box-shadow: 0 0 18px var(--primary-color-glow), inset 0 0 12px rgba(255,128,136,0.4); /* Neon glow */
+}
+
+/* Active tab state */
+.tab-btn.active {
+  background: rgba(255, 128, 136, 0.25); /* Highlight background */
+  border-color: var(--primary-color); /* Strong accent border */
+  animation: active-pulse 2s ease-in-out infinite; /* Continuous pulse */
+  z-index: 11; /* Keeps active tab above others */
+}
+
+/* Pulse animation for main tab */
+@keyframes active-pulse {
+  0% {
+    box-shadow: 0 0 12px var(--primary-color-glow), inset 0 0 8px rgba(255,128,136,0.3);
   }
-  .links {
-    width: 90%; /* Make links container responsive */
-    gap: 24px; /* Reduce gap between links on mobile */
+  50% {
+    box-shadow: 0 0 25px var(--primary-color-glow), inset 0 0 15px rgba(255,128,136,0.5);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 12px var(--primary-color-glow), inset 0 0 8px rgba(255,128,136,0.3);
+  }
+}
+
+/* Tab content container */
+.tab-content {
+  min-height: auto; /* removing the rigid height that was forcing an empty gap in the UI */
+  height: auto; /* allowing the container to shrink to the exact size of its content */
+  width: 100%; /* maintaining full width for centered child elements */
+  display: none; /* keeping the tab hidden by default for the switching logic */
+  flex-direction: column; /* stacking child elements vertically for a clean list layout */
+  justify-content: flex-start; /* anchoring items to the top to eliminate internal pauses */
+  align-items: center; /* ensuring everything stays centered on the horizontal axis */
+  min-height: 10rem; /* Forces a stable baseline for the footer regardless of content */
+}
+
+.tab-content::-webkit-scrollbar {
+  display: none; /* Hide scrollbar in WebKit browsers */
+}
+
+/* Arcade tab custom color override */
+.tab-btn:nth-child(2) {
+  background: rgba(166, 216, 238, 0.15); /* Blue glass */
+  border-color: rgba(166, 216, 238, 0.6); /* Blue border */
+}
+
+/* Hover state for arcade tab */
+.tab-btn:nth-child(2):hover {
+  background: rgba(166, 216, 238, 0.25); /* Brighter blue */
+  box-shadow: 0 0 18px rgba(243, 232, 161, 0.8), inset 0 0 12px rgba(243, 232, 161, 0.4); /* Yellow glow */
+}
+
+/* Active state for arcade tab */
+.tab-btn:nth-child(2).active {
+  background: rgba(166, 216, 238, 0.25); /* Active blue background */
+  border-color: #F3E8A1; /* Yellow accent border */
+  animation: arcade-pulse 2s ease-in-out infinite; /* Yellow pulse animation */
+}
+
+/* Arcade specific pulse animation */
+@keyframes arcade-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(243, 232, 161, 0.6), inset 0 0 8px rgba(243, 232, 161, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(243, 232, 161, 1), inset 0 0 15px rgba(243, 232, 161, 0.6);
+    transform: scale(1.02);
+  }
+}
+
+/* mirroring the exact hover effect from the arcade tab button */
+#arcade-launcher:hover {
+  background: rgba(166, 216, 238, 0.25); /* matching the translucent blue tint of the arcade theme */
+  border-color: #F3E8A1; /* forcing the border to the golden arcade accent */
+  box-shadow: 0 0 18px rgba(243, 232, 161, 0.8), inset 0 0 12px rgba(243, 232, 161, 0.4); /* applying the signature golden neon glow */
+  transform: scale(1.04); /* maintaining the consistent enlargement feedback across all interactive links */
+}
+
+/* mirroring the golden arcade glow for the placeholder tile on hover state */
+#arcade-soon:hover {
+  /* forcing the border to the golden arcade accent, overriding the default pink */
+  border-color: #F3E8A1 !important; 
+  /* applying the signature golden neon glow instead of the default pink glow */
+  box-shadow: 0 0 18px rgba(243, 232, 161, 0.8), inset 0 0 12px rgba(243, 232, 161, 0.4) !important;
+  /* providing subtle scale feedback while maintaining the disabled aesthetic */
+  transform: scale(1.02); 
+}
+
+#prompt-text { font-weight: bold; height: 1.5rem; margin-bottom: 1.25rem; } /* scalable text spacing for game instructions */
+.stats-grid { display: flex; gap: 1.25rem; font-weight: bold; font-size: 1.1rem; height: 1.5rem; margin-bottom: 1.25rem; } /* scalable row for stars and timer */
+.best-label { font-size: 0.8rem; margin-bottom: 0.25rem; opacity: 0.7; } /* scalable header for leaderboard results */
+
+/* keyframes for a high-quality star energy pulse */
+@keyframes star-bloom {
+  0% { transform: scale(1); filter: brightness(1); }
+  30% { transform: scale(1.3); filter: brightness(1.8); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* utility class to be triggered via JavaScript */
+.bloom-effect {
+  animation: star-bloom 0.4s ease-out;
+}
+
+/* defining the golden glow keyframes with forced overrides for inline styles */
+@keyframes launcher-gold-flash {
+  0% { box-shadow: 0 0 0px transparent; border-color: rgba(166, 216, 238, 0.6) !important; }
+  20% { box-shadow: 0 0 30px #F3E8A1; border-color: #F3E8A1 !important; } /* peak of the glow */
+  100% { box-shadow: 0 0 0px transparent; border-color: rgba(166, 216, 238, 0.6) !important; }
+}
+
+.launcher-highlight {
+  animation: launcher-gold-flash 1.5s ease-out;
+}
+
+/* responsive override for mobile devices to prevent horizontal overflow */
+@media (max-width: 768px) {
+  body {
+    /* switching from a 3 zone layout to a single column layout for narrow viewports */
+    grid-template-columns: 1fr; 
+    /* adding slight horizontal padding so the UI doesn't touch the physical screen edges */
+    padding: 0 1rem; 
+  }
+  
+  .container {
+    /* forcing the container into the only available grid column */
+    grid-column: 1; 
+    /* stripping the rigid 600px width to allow dynamic shrinking on small phones */
+    width: 100%; 
   }
 }
