@@ -71,35 +71,3 @@ window.addEventListener('starCaptured', () => {
     }, 10);
   }
 });
-
-/* global boundary variables for the physics engine (the Death Zone) */
-/* these must be completely outside any function so other scripts can read them */
-let uiLeft = 0;
-let uiRight = 0;
-let uiTop = 0;
-let uiBottom = 0;
-
-/* function to synchronize the JS physics collider with the CSS Grid visuals */
-function updateUICache() {
-  const mainUI = document.querySelector('.container');
-  
-  if (mainUI) {
-    /* extracting the exact, real-time screen coordinates of the central column */
-    const rect = mainUI.getBoundingClientRect();
-    
-    /* updating the Death Zone to perfectly match the 600px (or mobile) center zone */
-    uiLeft = rect.left;
-    uiRight = rect.right;
-    uiTop = rect.top;
-    uiBottom = rect.bottom;
-  }
-}
-
-/* handling the global viewport resize event strictly for physics boundary updates */
-window.addEventListener('resize', () => {
-  /* executing the cache update every time the screen changes size */
-  updateUICache();
-});
-
-/* triggering the initial calculation to establish boundaries immediately on load */
-window.dispatchEvent(new Event('resize'));

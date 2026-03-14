@@ -53,12 +53,13 @@ function getRespawnSide(currentStar, isInit = false) {
     if (!styleLeft) return;
 
     const x = parseFloat(styleLeft);
+    const y = parseFloat(star.style.top || 0); const isMobile = window.innerWidth <= 768; /* adding vertical awareness to the density counter for mobile layouts */
 
-    /* using the fixed grid boundaries to identify which zone the star occupies */
-    if (x < cachedUIRect.left) {
+    /* routing the density check to the vertical axis on mobile to treat the top zone as the 'left' balance anchor */
+    if (isMobile ? (y < cachedUIRect.top) : (x < cachedUIRect.left)) { 
       /* star is visibly located within the left anchor zone */
       leftCount++;
-    } else if (x > cachedUIRect.right) {
+    } else if (isMobile ? (y > cachedUIRect.bottom) : (x > cachedUIRect.right)) { /* identifying stars in the bottom zone on mobile or right zone on desktop to complete the density map */
       /* star is visibly located within the right anchor zone */
       rightCount++;
     }
@@ -80,24 +81,36 @@ function respawnStar(star, visualElement) {
   /* retrieving the side with the lowest star density from the balancing engine */
   const side = getRespawnSide(star);
   const actualSize = star.currentSize || star.baseSize;
-  let newX;
+  const isMobile = window.innerWidth <= 768; /* checking viewport width to toggle between horizontal and vertical physics balancing */
+  let newX, newY; /* preparing coordinate variables for the orientation-aware relocation logic */
+  if (isMobile) { /* diverting to a vertical respawn logic to protect the central UI belt on mobile devices */
+  newX = Math.random() * (window.innerWidth - actualSize); /* ensuring stars are distributed across the full viewport width in vertical mobile layouts */
 
   /* enforcing spawn strictly within the boundaries of the calculated side-zone anchors */
   if (side === 'left') {
-    /* calculating a random X position within the width of the left anchor */
-    /* includes a safety offset to prevent the star from clipping the UI edge */
-    newX = Math.random() * (leftAnchorRect.width - actualSize - 20);
+    newY = Math.random() * (leftAnchorRect.height - actualSize - 20); /* ensuring the vertical coordinate stays within the upper physical boundary */
+    } else { /* shifting the spawn focus to the bottom physical zone for vertical density relief */
+      newY = rightAnchorRect.top + 10 + Math.random() * (rightAnchorRect.height - actualSize - 20); /* anchoring the star within the bottom physical zone below the central interface */
+      
+    /* using the globally defined newX for mobile to ensure stars utilize the full viewport width regardless of the vertical zone */
+    }
   } else {
+    newY = Math.random() * (window.innerHeight - actualSize - 60); /* initializing the vertical coordinate for standard widescreen layout */
+    if (side === 'left') {
+      newX = Math.random() * (leftAnchorRect.width - actualSize - 20); /* calculating horizontal start within the left desktop anchor */
+    } else {
     /* calculating a random X position within the right anchor zone */
     /* starts at the right anchor's left boundary with a slight interior offset */
     const range = rightAnchorRect.width - actualSize - 20;
     newX = rightAnchorRect.left + 10 + Math.random() * Math.max(0, range);
   }
 
+  } /* closing the desktop coordinate logic block to return to the global style application */
   /* assigning the new safe coordinates to the element's style properties */
   star.style.left = newX + 'px';
-  /* randomizing vertical position within the full screen height minus a safety margin */
-  star.style.top = Math.random() * (window.innerHeight - actualSize - 60) + 'px';
+
+  /* applying the orientation aware vertical coordinate to ensure the star respects mobile top/bottom safe zones */
+  star.style.top = newY + 'px'; 
 
   /* restoring original visual state and scaling for consistent interactive feedback */
   star.style.filter = 'none';
@@ -196,26 +209,32 @@ let mouseX = -1000;
 /* setting the initial vertical mouse coordinate outside the screen */
 let mouseY = -1000;
 
-/* listening for mouse movement to update the global coordinates */
-window.addEventListener('mousemove', (e) => {
-  /* capturing the horizontal position of the cursor */
-  mouseX = e.clientX;
-  /* capturing the vertical position of the cursor */
-  mouseY = e.clientY;
-});
+/* tracking continuous mouse movement for the desktop hover repulsion effect */
+window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+/* initiating mobile repulsion by capturing the initial touch coordinate point */
+window.addEventListener('touchstart', (e) => { mouseX = e.touches[0].clientX; mouseY = e.touches[0].clientY; }, { passive: true });
+/* updating the repulsion focus in real-time as the user slides their finger across the screen */
+window.addEventListener('touchmove', (e) => { mouseX = e.touches[0].clientX; mouseY = e.touches[0].clientY; }, { passive: true });
+/* disabling the repulsion force field by resetting coordinates when the finger is lifted */
+window.addEventListener('touchend', () => { mouseX = -1000; mouseY = -1000; });
 
   /* primary generation loop for initializing each star object */
   blobs.forEach((b, index) => {
   /* adding random variance: size (+/- 15) and speed (+/- 0.2) */
-  const randomSize = b.size + (Math.random() * 15 - 5);
-  const randomSpeed = b.maxSpeed + (Math.random() * 0.15 - 0.07);
+  /* detecting mobile layout during initialization to adjust starting parameters */
+  const isMobileInit = window.innerWidth <= 768;
+  /* applying a narrower size variance for mobile to prevent stars from generating too small */
+  const sizeVariance = isMobileInit ? (Math.random() * 10) : (Math.random() * 15 - 5);
+  const randomSize = b.size + sizeVariance;
+  /* drastically reducing initial velocity for mobile displays to ensure a calm background in confined spaces */
+  const randomSpeed = (b.maxSpeed + (Math.random() * 0.15 - 0.07)) * (isMobileInit ? 0.25 : 1.0);
 
   /* calculating a dynamic star size unit based on the current master scale */
   const starSizeRem = 4.75; // equivalent to our old 76px but in rem units
   /* retrieving the base rem size in pixels to align JS logic with CSS scaling */
   const remInPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
-  /* scaling the array size value to current REM base */
-  const currentStarSize = (randomSize / 37) * remInPx;
+  /* scaling the array size value to current REM base and enlarging stars by 50% on mobile */
+  const currentStarSize = (randomSize / 37) * remInPx * (isMobileInit ? 1.8 : 1.0);
 
   /* calculating the width of a single star pixel so the 5x5 grid fits the container exactly */
   const p = currentStarSize / 5;
@@ -274,26 +293,35 @@ window.addEventListener('mousemove', (e) => {
   /* adding the completed star object to the background container */
   container.appendChild(div);
 
-  /* determining the optimal starting side using the balancing engine in init mode */
+/* determining the optimal starting side using the balancing engine in init mode */
   const initialSide = getRespawnSide(div, true);
-  let startX;
+  let startX, startY;
 
-  /* enforcing initial spawn strictly within the grid-defined side anchors */
-  if (initialSide === 'left') {
-    /* calculating a safe horizontal start within the left anchor boundaries */
-    /* using the cached width to ensure the star never overlaps the central UI */
-    startX = Math.random() * (leftAnchorRect.width - currentStarSize - 20);
+  if (isMobileInit) {
+    /* calculating vertical-first spawn for mobile to avoid the central death zone belt */
+    startX = Math.random() * (window.innerWidth - currentStarSize);
+    if (initialSide === 'left') {
+      /* anchoring to the top zone with a safety margin from the edge */
+      startY = 20 + Math.random() * (leftAnchorRect.height - currentStarSize - 40);
+    } else {
+      /* anchoring to the bottom zone with a safety margin from the edge */
+      startY = rightAnchorRect.top + 20 + Math.random() * (rightAnchorRect.height - currentStarSize - 40);
+    }
   } else {
-    /* calculating a safe horizontal start within the right anchor boundaries */
-    /* offset starts from the right grid column's left edge */
-    const range = rightAnchorRect.width - currentStarSize - 20;
-    startX = rightAnchorRect.left + 10 + Math.random() * Math.max(0, range);
+    /* maintaining horizontal-first spawn for desktop layouts with a vertical belt UI */
+    if (initialSide === 'left') {
+      startX = Math.random() * (leftAnchorRect.width - currentStarSize - 20);
+    } else {
+      const range = rightAnchorRect.width - currentStarSize - 20;
+      startX = rightAnchorRect.left + 10 + Math.random() * Math.max(0, range);
+    }
+    /* full height randomization for desktop since the UI is a vertical column */
+    startY = Math.random() * (window.innerHeight - currentStarSize - 60);
   }
 
-  /* assigning the calculated safe horizontal position to the star element */
+  /* applying the pre-calculated safe coordinates to eliminate the startup flash in the UI zone */
   div.style.left = startX + 'px';
-  /* randomizing the vertical starting point across the full viewport height */
-  div.style.top = Math.random() * (window.innerHeight - currentStarSize - 60) + 'px';
+  div.style.top = startY + 'px';
 
   /* calculating the initial horizontal velocity with random direction */
   div.dx = (Math.random() - 0.5) * randomSpeed;
@@ -317,7 +345,7 @@ window.addEventListener('mousemove', (e) => {
     const currentOpacity = parseFloat(div.style.opacity);
     
     /* verifying if the star is visible and the physics system allows interaction */
-    if (currentOpacity > 0.3) {
+    if (currentOpacity > 0.05) {
       /* broadcasting a global signal that a star capture has occurred */
       /* the engine doesn't care if hub.js or game.js is listening */
       window.dispatchEvent(new CustomEvent('starCaptured'));
@@ -352,10 +380,13 @@ window.addEventListener('mousemove', (e) => {
   function animate() {
     /* calculating dynamic zoom scale to normalize movement speed across different browser scales */
     const zoomScale = window.innerWidth / window.outerWidth;
+    /* identifying device type within the frame-by-frame animation loop for adaptive collision math */
+    const isMobile = window.innerWidth <= 768; 
 
-    /* overriding static boundaries with full-height percentage zones to fix zoom bugs */
-    cachedUIRect = { left: window.innerWidth * 0.35, right: window.innerWidth * 0.65, top: 0, bottom: window.innerHeight };
-
+    /* defining a static layout fallback for the desktop vertical occlusion belt */
+    const desktopShield = { left: window.innerWidth * 0.35, right: window.innerWidth * 0.65, top: 0, bottom: window.innerHeight };
+    /* selecting the active collision bounds: the live cached UI for mobile or the fixed belt for desktop */
+    const activeRect = isMobile ? cachedUIRect : desktopShield; 
     /* capturing the current horizontal coordinate of the star */
     let x = parseFloat(div.style.left);
     /* capturing the current vertical coordinate of the star */
@@ -380,47 +411,85 @@ window.addEventListener('mousemove', (e) => {
       const dy = y - oy;
       const distance = Math.sqrt(dx * dx + dy * dy);
       
-      /* applying repulsion forces if objects are too close */
-      if (distance < 100) {
-        /* calculating the force intensity based on proximity */
-        const repulsion = (100 - distance) / 100;
+      /* defining a much tighter interaction radius for mobile to increase the free-roaming area */
+      const repulsionThreshold = isMobile ? 50 : 100;
+      /* executing repulsion physics only when stars breach the minimized proximity threshold */
+      if (distance < repulsionThreshold) {
+        /* normalizing the repulsion magnitude relative to the new, smaller interaction radius */
+        const repulsion = (repulsionThreshold - distance) / repulsionThreshold;
+        /* applying a subtle multiplier for mobile to allow natural clustering without erratic jumps */
+        const repulsionMultiplier = isMobile ? 0.15 : 0.5;
         /* updating velocities based on the repulsion vector */
-        div.dx += (dx / distance) * repulsion * 0.5 * gameSpeed;
-        div.dy += (dy / distance) * repulsion * 0.5 * gameSpeed;
+        div.dx += (dx / distance) * repulsion * repulsionMultiplier * gameSpeed;
+        div.dy += (dy / distance) * repulsion * repulsionMultiplier * gameSpeed;
       }
     });
 
-    /* checking if the star has entered the strictly defined CSS Grid central zone */
-    /* using the native cachedUIRect which naturally perfectly matches the new Grid layout */
-    const isUnderUI = x + actualSize > cachedUIRect.left && 
-                      x < cachedUIRect.right && 
-                      y + actualSize > cachedUIRect.top && 
-                      y < cachedUIRect.bottom;
+    /* applying an internal offset on mobile to shrink the invisible occlusion zone */
+    const innerPad = isMobile ? 15 : 0;
+    /* verifying star occlusion against the active layout rectangle (cached UI for mobile or fixed column for desktop) */
+    const isUnderUI = x + actualSize > (activeRect.left + innerPad) && x < (activeRect.right - innerPad) && y + actualSize > (activeRect.top + innerPad) && y < (activeRect.bottom - innerPad);
     
     /* handling the occlusion and relocation logic for the interface zone */
     if (isUnderUI) {
       /* gradually reducing the object visibility as it enters the danger zone */
       div.occlusionFactor = Math.max(0, div.occlusionFactor - 0.05);
       
-/* checking if the object is completely invisible to safely relocate it */
+      /* checking if the object is completely invisible to safely relocate it */
       if (div.occlusionFactor <= 0) {
-        /* Portal Logic: Teleporting the pushed star to the opposite side */
-        const isCurrentlyOnLeft = x + (actualSize / 2) < (cachedUIRect.left + cachedUIRect.right) / 2;
-        const targetSide = isCurrentlyOnLeft ? 'right' : 'left';
 
-        if (targetSide === 'right') {
-          /* was on the left, teleporting to the right responsive zone */
-          const rightStart = cachedUIRect.right + 40; 
-          const rightRange = Math.max(0, window.innerWidth - rightStart - actualSize);
-          x = rightStart + Math.random() * rightRange;
-        } else {
-          /* was on the right, teleporting to the left responsive zone */
-          const leftBoundary = Math.max(0, cachedUIRect.left - actualSize - 40); 
-          x = Math.random() * leftBoundary;
+        /* calculating the focal point for the portal transition based on active layout bounds */
+        const isTopOrLeft = isMobile ? y + (actualSize/2) < (activeRect.top + activeRect.bottom)/2 : x + (actualSize/2) < (activeRect.left + activeRect.right)/2;
+        let targetSide = isTopOrLeft ? 'right' : 'left';
+        
+        /* scanning target side population */
+        let visibleOnTarget = 0;
+        
+        /* scanning target side population density, accounting for both visible stars and those currently in transition */
+        allStars.forEach(s => { 
+          /* retrieving the primary coordinate based on current viewport orientation */
+          const p = parseFloat(isMobile ? s.style.top : s.style.left) || 0; 
+          /* checking if the star is currently perceptible to the user */
+          const isVisible = parseFloat(s.style.opacity||0) >= 0.2; 
+          /* tracking stars that are physically present but visually hidden during relocation */
+          const isInTransition = s.isRespawning || s.isSwapping; 
+          /* counting valid population members to determine if the target zone has reached its capacity */
+          if (isVisible || isInTransition) { 
+            /* checking population density within the active boundaries to prevent zone overcrowding */
+            if (targetSide === 'left' && p < (isMobile ? activeRect.top : activeRect.left)) visibleOnTarget++; 
+            if (targetSide === 'right' && p > (isMobile ? activeRect.bottom : activeRect.right)) visibleOnTarget++;
+          } 
+        });
+
+        /* eliminating the star if destination is full */
+        if (visibleOnTarget >= (isMobile ? 2 : 3)) { div.occlusionFactor = 1; div.internalClock = Math.PI * 1.5; respawnStar(div, visual); } else {
+        /* Portal Logic, Teleporting the pushed star to the opposite safe zone */
+
+        if (isMobile) { /* branching active portal relocation for vertical mobile layouts */
+          
+          if (targetSide === 'right') { y = rightAnchorRect.top + 10 + Math.random() * (rightAnchorRect.height - actualSize - 20); }
+          else { y = Math.random() * (leftAnchorRect.height - actualSize - 20); }
+          x = Math.random() * (window.innerWidth - actualSize); /* utilizing full width */
+        } else { /* maintaining horizontal portal logic for desktop displays */
+          
+          /* branching the relocation logic for stars targeted at the right-side safe zone */
+          if (targetSide === 'right') {
+            /* establishing the spawn entry point just beyond the active right boundary */
+            const rightStart = activeRect.right + 40;
+            /* defining the available horizontal span for random distribution within the right zone */
+            const rightRange = Math.max(0, window.innerWidth - rightStart - actualSize);
+            /* assigning a random horizontal position within the calculated right-side spawn range */
+            x = rightStart + Math.random() * rightRange;
+          /* handling coordinate calculations for stars relocating to the left-side safe zone */
+          } else {
+            /* establishing the spawn entry point just before the active left boundary */
+            const leftBoundary = Math.max(0, activeRect.left - actualSize - 40); 
+            /* randomizing the horizontal coordinate within the available left-side area */
+            x = Math.random() * leftBoundary;
+          }
+          /* randomizing the vertical coordinate across the full height of the desktop viewport */
+          y = Math.random() * (window.innerHeight - actualSize - 60);
         }
-
-        /* randomizing vertical position within the full screen height */
-        y = Math.random() * (window.innerHeight - actualSize - 60);
     
         /* applying new safe coordinates for the pushed star */
         div.style.left = x + "px";
@@ -436,8 +505,10 @@ window.addEventListener('mousemove', (e) => {
           if (otherStar === div || otherStar.isRespawning) return;
           
           const ox = parseFloat(otherStar.style.left || 0);
-          const isOtherOnRight = ox > cachedUIRect.right;
-          const isOtherOnLeft = ox < cachedUIRect.left;
+          const oy = parseFloat(otherStar.style.top || 0);
+          /* checking dynamic axis based on current device layout */
+          const isOtherOnRight = isMobile ? (oy > cachedUIRect.bottom) : (ox > cachedUIRect.right);
+          const isOtherOnLeft = isMobile ? (oy < cachedUIRect.top) : (ox < cachedUIRect.left);
 
           /* filtering candidates to only include stars residing in the target zone */
           if ((targetSide === 'right' && isOtherOnRight) || (targetSide === 'left' && isOtherOnLeft)) {
@@ -454,49 +525,55 @@ window.addEventListener('mousemove', (e) => {
         if (swapCandidate) {
           swapCandidate.isSwapping = true;
           const swapSize = swapCandidate.currentSize || swapCandidate.baseSize;
-          /* pre-calculating the target coordinates for the silent transfer */
-          if (targetSide === 'right') {
-            const leftBoundary = Math.max(0, cachedUIRect.left - swapSize - 40); 
-            swapCandidate.nextX = Math.random() * leftBoundary;
-          } else {
-            const rightStart = cachedUIRect.right + 40; 
-            const rightRange = Math.max(0, window.innerWidth - rightStart - swapSize);
-            swapCandidate.nextX = rightStart + Math.random() * rightRange;
+          if (isMobile) { /* branching swap destination to vertical zones for mobile */
+            if (targetSide === 'right') { swapCandidate.nextY = rightAnchorRect.top + 10 + Math.random() * (rightAnchorRect.height - swapSize - 20); } /* anchoring to the bottom zone */
+            else { swapCandidate.nextY = Math.random() * (leftAnchorRect.height - swapSize - 20); } /* anchoring to the top zone */
+            swapCandidate.nextX = Math.random() * (window.innerWidth - swapSize); /* full width distribution */
+          } else { /* standard left-right swap logic for widescreen layouts */
+            if (targetSide === 'right') { swapCandidate.nextX = Math.random() * Math.max(0, cachedUIRect.left - swapSize - 40); } /* anchoring to the left zone */
+            else { swapCandidate.nextX = cachedUIRect.right + 40 + Math.random() * (window.innerWidth - cachedUIRect.right - swapSize - 40); } /* anchoring to the right zone */
+            swapCandidate.nextY = Math.random() * (window.innerHeight - swapSize - 60); /* standard vertical randomization */
           }
-          swapCandidate.nextY = Math.random() * (window.innerHeight - swapSize - 60);
         }
-      }
+      } 
+    }
     } else {
       /* gradually restoring the object visibility when clear of the interface */
       div.occlusionFactor = Math.min(1, div.occlusionFactor + 0.02);
       
-      /* applying steering forces to gently deflect stars approaching the central Grid zone */
-      const nearUIX = x + actualSize > (cachedUIRect.left - 100) && x < (cachedUIRect.right + 100);
-      const nearUIY = y + actualSize > (cachedUIRect.top - 100) && y < (cachedUIRect.bottom + 100);
+      /* applying a binary hard bounce logic for mobile to avoid vector equilibrium traps */
+      const shieldBuffer = isMobile ? 3 : 100;
+      /* calculating horizontal intersection with the tightened exclusion zone */
+      const nearUIX = x + actualSize > (cachedUIRect.left - shieldBuffer) && x < (cachedUIRect.right + shieldBuffer);
+      /* calculating vertical intersection with the tightened exclusion zone */
+      const nearUIY = y + actualSize > (cachedUIRect.top - shieldBuffer) && y < (cachedUIRect.bottom + shieldBuffer);
       
       if (nearUIX && nearUIY) {
-        /* calculating the vector away from the physical center of the interface */
-        const dX = x - (cachedUIRect.left + cachedUIRect.right) / 2;
-        const dY = y - (cachedUIRect.top + cachedUIRect.bottom) / 2;
-        
+        /* calculating the horizontal vector relative to the active interface center */
+        const dX = x - (activeRect.left + activeRect.right) / 2;
+        /* calculating the vertical vector relative to the active interface center */
+        const dY = y - (activeRect.top + activeRect.bottom) / 2;
+        /* determining the absolute Euclidean distance to the central point */
         const d = Math.sqrt(dX * dX + dY * dY);
         
-        /* updating velocities with the steering vector to push the star outward */
         if (d > 0) { 
-          div.dx += (dX / d) * 0.02 * gameSpeed; 
-          div.dy += (dY / d) * 0.02 * gameSpeed; 
+        /* restoring a low-intensity linear repulsion for mobile to eliminate jitter */
+        const deflectionForce = isMobile ? 0.05 : 0.02;
+        /* applying a consistent horizontal steering vector away from the interface center */
+        div.dx += (dX / d) * deflectionForce * gameSpeed; 
+        /* applying a consistent vertical steering vector away from the interface center */
+        div.dy += (dY / d) * deflectionForce * gameSpeed;
         }
       }
     }
 
-    /* calculating steering forces based on current mouse proximity */
-    const distThreshold = 150;
-    /* calculating the distance between the star and the cursor */
+    /* adjusting the interaction radius specifically for mobile touch precision */
+    const distThreshold = isMobile ? 120 : 150;
+    /* calculating the vector between the star and the current input coordinate */
     const mDX = x - mouseX;
     const mDY = y - mouseY;
     const mDist = Math.sqrt(mDX * mDX + mDY * mDY);
-
-    /* applying avoidance logic if the cursor is within the threshold */
+    /* executing continuous repulsion logic as long as the touch or mouse is within range */
     if (mDist < distThreshold && mDist > 0) {
       /* calculating the intensity of the avoidance force */
       const force = (distThreshold - mDist) / distThreshold;
@@ -518,35 +595,45 @@ window.addEventListener('mousemove', (e) => {
 
     /* scaling the maximum velocity based on the current master font size to maintain consistent speed across resolutions */
     const speedFactor = remInPx / 16;
-    const currentMax = b.maxSpeed * 2.5 * speedFactor;
+    /* clamping the maximum allowed velocity, reducing it significantly for mobile layouts */
+    const currentMax = b.maxSpeed * 2.5 * speedFactor * (isMobile ? 0.3 : 1.0);
     /* clamping the horizontal velocity within limits */
     div.dx = Math.max(Math.min(div.dx, currentMax), -currentMax);
     /* clamping the vertical velocity within limits */
     div.dy = Math.max(Math.min(div.dy, currentMax), -currentMax);
 
-    /* Defining the screen edge avoidance logic (Steering) */
-    const edgeMargin = 150; // distance from edge where star starts to turn
-    const steerIntensity = 0.15 * gameSpeed; // how hard the star steers back
+    /* implementing binary hard-wall steering for mobile while maintaining desktop legacy feel */
+    const edgeMargin = isMobile ? 16 : 150; 
+    /* returning a universal linear steering factor based on the current penetration depth */
+    const getSteerPower = (dist) => {
+      /* calculating a normalized 0.0 to 1.0 ratio to provide smooth, organic deceleration */
+      return Math.max(0, (edgeMargin - dist) / edgeMargin);
+    };
 
-    /* Steering away from the Left and Right edges */
+    /* applying an organic linear bounce for the left viewport boundary */
     if (x < edgeMargin) {
-      div.dx += (edgeMargin - x) / edgeMargin * steerIntensity;
+      div.dx += getSteerPower(x) * (isMobile ? 0.35 : 0.15) * gameSpeed;
     } else if (x > window.innerWidth - actualSize - edgeMargin) {
+      /* calculating the distance for the right-side steer to ensure symmetrical repulsion */
       const dist = window.innerWidth - actualSize - x;
-      div.dx -= (edgeMargin - dist) / edgeMargin * steerIntensity;
+      div.dx -= getSteerPower(dist) * (isMobile ? 0.35 : 0.15) * gameSpeed;
     }
 
-    /* Steering away from the Top and Bottom edges */
+    /* initiating organic vertical steering for the top viewport boundary */
     if (y < edgeMargin) {
-      div.dy += (edgeMargin - y) / edgeMargin * steerIntensity;
+      /* applying a linear bounce impulse to provide smooth deceleration at the top edge */
+      div.dy += getSteerPower(y) * (isMobile ? 0.35 : 0.15) * gameSpeed;
     } else if (y > window.innerHeight - actualSize - edgeMargin) {
+      /* calculating vertical distance to the bottom limit for symmetrical steering */
       const dist = window.innerHeight - actualSize - y;
-      div.dy -= (edgeMargin - dist) / edgeMargin * steerIntensity;
+      /* applying a negative linear impulse to counteract downward velocity at the bottom edge */
+      div.dy -= getSteerPower(dist) * (isMobile ? 0.35 : 0.15) * gameSpeed;
     }
 
-    /* Safety boundary - synchronized with the dynamic resolution scale */
-    x = Math.max(-50, Math.min(x, window.innerWidth - actualSize + 50));
-    y = Math.max(-50, Math.min(y, window.innerHeight - actualSize + 50));
+    /* applying a global safety buffer to allow stars a slight overshoot beyond viewport edges */
+    const offLimit = 50;
+    x = Math.max(-offLimit, Math.min(x, window.innerWidth - actualSize + offLimit));
+    y = Math.max(-offLimit, Math.min(y, window.innerHeight - actualSize + offLimit));
 
     /* applying the updated horizontal coordinate to the element */
     div.style.left = x + 'px';
@@ -566,27 +653,46 @@ window.addEventListener('mousemove', (e) => {
     const isFading = currentSin > 0 && Math.cos(div.internalClock) < 0;
     const isDark = currentSin <= 0;
     let clockStep = div.blinkSpeed * 16.6;
+    
+    /* shortening the visible phase duration exclusively on mobile devices */
+    if (isMobile && !isDark) clockStep *= 1.8;
+
     /* forcing an accelerated exit if the star is currently scheduled for relocation */
     if (div.isSwapping && !isDark) clockStep *= 2;
-    /* performing a silent background relocation if the sides become imbalanced while dark */
-    const currentSide = x + (actualSize / 2) < (cachedUIRect.left + cachedUIRect.right) / 2 ? 'left' : 'right';
+
+    /* determining the current side relative to the active interface bounds */
+    const currentSide = x + (actualSize / 2) < (activeRect.left + activeRect.right) / 2 ? 'left' : 'right';
     const optimalSide = getRespawnSide(div);
     if (isDark && !div.isSwapping && !div.isRespawning && currentSide !== optimalSide) {
-
-    /* executing a silent teleport to the underpopulated side while the star is invisible */
-    if (optimalSide === 'left') { x = Math.random() * (cachedUIRect.left - actualSize - 40); }
-    else { x = cachedUIRect.right + 40 + Math.random() * (window.innerWidth - cachedUIRect.right - actualSize - 40); }
-    y = Math.random() * (window.innerHeight - actualSize - 60);
-    div.style.left = x + "px"; div.style.top = y + "px"; }
+      if (isMobile) { /* branching silent relocation to vertical zones for mobile devices */
+        /* anchoring to the top zone based on the active interface boundary */
+        if (optimalSide === 'left') { y = Math.random() * (activeRect.top - actualSize - 20); }
+        /* anchoring to the bottom zone below the active interface boundary */
+        else { y = activeRect.bottom + 10 + Math.random() * (window.innerHeight - activeRect.bottom - actualSize - 20); }
+        x = Math.random() * (window.innerWidth - actualSize); /* spreading across full width on mobile */
+      } else { /* maintaining horizontal relocation for desktop displays */
+        /* anchoring to the left zone relative to the active interface belt */
+        if (optimalSide === 'left') { x = Math.random() * (activeRect.left - actualSize - 40); }
+        /* anchoring to the right zone beyond the active interface belt */
+        else { x = activeRect.right + 40 + Math.random() * (window.innerWidth - activeRect.right - actualSize - 40); }
+        y = Math.random() * (window.innerHeight - actualSize - 60); /* standard vertical randomization */
+      }
+      div.style.left = x + "px"; div.style.top = y + "px"; /* applying final coordinates to the element */
+    }
 
     /* executing the silent teleport and resetting the phase once the star is fully obscured */
     if (div.isSwapping && isDark) { div.style.left = div.nextX + "px"; div.style.top = div.nextY + "px"; div.isSwapping = false; div.occlusionFactor = 1; div.internalClock = (Math.PI * 1.5); }
+    
+    /* dynamically adjusting the overcrowding threshold to reduce concurrent visible stars on mobile */
+    const maxVisible = isMobile ? 2 : 3;
+    
     /* rushing the exit if the side is overcrowded */
-    if (visibleOnSide >= 3 && isFading) clockStep *= 7;
+    if (visibleOnSide >= maxVisible && isFading) clockStep *= 7;
     /* holding the star on stage if the population is critically low */
     if (visibleOnSide <= 1 && isFading) clockStep = 0;
     /* rushing the entrance of new stars if reinforcements are needed */
     if (visibleOnSide <= 1 && isDark) clockStep *= 7;
+
     /* advancing the independent clock and calculating opacity via sine wave */
     div.internalClock += clockStep;
     div.style.opacity = Math.max(0, Math.sin(div.internalClock)) * 0.9 * div.occlusionFactor;
@@ -598,3 +704,6 @@ window.addEventListener('mousemove', (e) => {
   /* initiating the animation cycle for the individual star */
   animate();
 });
+
+/* triggering the initial calculation to establish boundaries immediately on load */
+window.dispatchEvent(new Event('resize'));
